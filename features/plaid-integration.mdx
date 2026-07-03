@@ -1,0 +1,56 @@
+---
+title: "Plaid Bank Integration — PC Connect Admin Guide"
+sidebarTitle: "Plaid"
+description: "Link a verified bank account to PC Connect using Plaid's secure bank-linking flow for financial verification and transaction processing settings."
+---
+
+The Plaid section provides a secure way to connect a bank account to PC Connect for financial verification and transaction processing. PC Connect integrates with [Plaid](https://plaid.com), a widely adopted third-party financial data platform, to handle the bank account linking flow without exposing sensitive credentials to the application directly.
+
+<Info>
+  Plaid is a third-party service. Bank account linking is handled entirely within Plaid's own secure interface. PC Connect does not store or process raw banking credentials.
+</Info>
+
+## Accessing the Plaid section
+
+Navigate to **ADMIN → Plaid** in the left-hand sidebar to open this section. The section is available to users with Admin-level permissions.
+
+## Link Account Credentials card
+
+The main content area contains the **Link Account Credentials** card. This card is the single entry point for initiating a bank account connection through Plaid Link.
+
+<CardGroup cols={1}>
+  <Card title="Link Account Credentials" icon="building-columns" href="#launch-plaid-link">
+    Initiates the Plaid Link flow to connect a verified bank account. Click **Launch Plaid Link** inside this card to begin.
+  </Card>
+</CardGroup>
+
+## What is Plaid Link?
+
+Plaid Link is Plaid's embedded, browser-based module that guides users through securely selecting their financial institution and authorizing account access. The flow runs entirely within Plaid's interface — PC Connect only receives a verified account token once the process is complete, which is then used for financial verification and transaction processing settings within the platform.
+
+## Linking a bank account
+
+<Steps>
+  <Step title="Navigate to Admin > Plaid">
+    Open the sidebar and go to **ADMIN → Plaid**.
+  </Step>
+  <Step title="Click Launch Plaid Link">
+    Inside the **Link Account Credentials** card, click the **Launch Plaid Link** button. Plaid's secure bank-linking interface will open.
+  </Step>
+  <Step title="Complete Plaid's secure bank-linking flow">
+    Follow the on-screen prompts inside the Plaid interface: select your financial institution, authenticate with your banking credentials, and authorize the account connection. Your credentials are submitted directly to Plaid and are never passed through PC Connect.
+  </Step>
+</Steps>
+
+<Note>
+  Once the Plaid Link flow is completed successfully, the linked account credentials will be available to PC Connect for bank account verification and transaction processing configuration.
+</Note>
+
+## Section overview
+
+| Component | Description |
+|---|---|
+| Link Account Credentials card | Container for the Plaid bank-linking action |
+| Launch Plaid Link button | Triggers Plaid's secure, hosted bank-linking interface |
+| Bank account verification | Confirms account ownership via Plaid's verification flow |
+| Transaction processing settings | Configures how verified account data is used for financial operations in PC Connect |

@@ -1,0 +1,139 @@
+---
+title: "Understanding State Management Patterns in PC Connect"
+sidebarTitle: "State Management"
+description: "PC Connect uses React useState and Context API only — no Redux or Zustand. How auth, tab routing, settings, and local UI state are each handled."
+---
+
+PC Connect keeps its state management intentionally minimal. There is no external state library: the entire application is wired together with React's built-in `useState` hook and the Context API. This makes the codebase straightforward to follow — every piece of state either lives locally in the component that owns it or is broadcast globally through one of two contexts.
+
+## Authentication state
+
+Authentication is a single boolean managed at the very top of the tree in `src/App.tsx`.
+
+```tsx
+// src/App.tsx
+export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  return (
+    <SettingsProvider>
+      <ThemeProvider>
+        {isAuthenticated ? (
+          <AppContent onLogout={() => setIsAuthenticated(false)} />
+        ) : (
+          <LoginView onLogin={() => setIsAuthenticated(true)} />
+        )}
+      </ThemeProvider>
+    </SettingsProvider>
+  );
+}
+```
+
+`LoginView` calls `onLogin()` when credentials are accepted, flipping `isAuthenticated` to `true` and replacing the login screen with `AppContent`. Calling `onLogout()` (accessible from the `SettingsDrawer`) flips it back.
+
+<Note>
+  Authentication state is held in memory only. It resets to `false` on a hard page refresh — there is no session token persisted to `localStorage` or cookies in the current implementation.
+</Note>
+
+## Active tab / navigation state
+
+Inside `AppContent`, a second piece of `useState` tracks which section the user is viewing:
+
+```tsx
+function AppContent({ onLogout }: AppContentProps) {
+  const [activeTab, setActiveTab] = useState('#dashboard');
+
+  const renderTabContent = () => {
+    switch (activeTab) {
+      case '#dashboard':           return <AppView onNavigate={setActiveTab} />;
+      case '#users-management':    return <UsersManagementView />;
+      case '#client-management':
+      case '#client-profile':      return <ClientManagementView activeTab={activeTab} setActiveTab={setActiveTab} />;
+      case '#active-incomplete-cases': return <ActiveIncompleteCasesView />;
+      case '#educational-resources':   return <EducationalResourcesView />;
+      // … additional cases
+      default: return <AppView />;
+    }
+  };
+
+  return (
+    <DashboardLayout activeTab={activeTab} setActiveTab={setActiveTab}>
+      {renderTabContent()}
+    </DashboardLayout>
+  );
+}
+```
+
+Hash strings like `'#dashboard'` or `'#client-management'` serve as route identifiers. `DashboardLayout` receives `setActiveTab` and calls it when the user clicks a navigation item. Some sections (e.g. `ClientManagementView`) also receive `setActiveTab` so they can navigate to sub-views like `'#client-profile'` programmatically.
+
+## Settings context
+
+`src/components/settings/settings-context.tsx` defines the one global context that carries user preferences:
+
+```ts
+export interface SettingsContextType {
+  themeMode: 'light' | 'dark';
+  themeColorPreset: ColorPresetId;
+  onToggleMode: () => void;
+  onChangeColorPreset: (preset: ColorPresetId) => void;
+}
+```
+
+`SettingsProvider` (in `settings-provider.tsx`) backs both values with `useState` and persists them to `localStorage` via a `useEffect` so preferences survive page reloads:
+
+```tsx
+const [themeMode, setThemeMode] = useState<'light' | 'dark'>(() => {
+  const saved = localStorage.getItem('themeMode');
+  if (saved === 'light' || saved === 'dark') return saved;
+  return 'light'; // default
+});
+```
+
+### `useSettings()` hook
+
+`useSettings()` is the only way to consume the settings context. It throws a descriptive error when called outside a `SettingsProvider`, making misconfiguration immediately obvious during development:
+
+```tsx
+export function useSettings() {
+  const context = useContext(SettingsContext);
+  if (!context) {
+    throw new Error('useSettings must be used within a SettingsProvider');
+  }
+  return context;
+}
+```
+
+**Usage example:**
+
+```tsx
+import { useSettings } from '../components/settings/settings-context';
+
+function ModeToggle() {
+  const { themeMode, onToggleMode } = useSettings();
+
+  return (
+    <button onClick={onToggleMode}>
+      Toggle {themeMode === 'light' ? 'dark' : 'light'} mode
+    </button>
+  );
+}
+```
+
+## Local component state
+
+Each feature view owns all of its own UI state — search queries, filter values, pagination, modal visibility, and form data are all managed with `useState` scoped to the view component. No state leaks up through the tree unless it is required by a sibling or parent.
+
+For example, `UsersManagementView` manages its own search input and row selection, `ClientManagementView` tracks which client record is open, and `ActiveIncompleteCasesView` controls its own pagination and filter dropdowns — all with local `useState` calls that are invisible to the rest of the application.
+
+## Summary
+
+| Layer | Mechanism | Location |
+|---|---|---|
+| Authentication | `useState` (boolean) | `App.tsx` |
+| Active section / routing | `useState` (hash string) | `AppContent` in `App.tsx` |
+| Theme mode & color preset | Context + `useState` | `SettingsProvider` / `SettingsContext` |
+| Search, filters, pagination, modals | Local `useState` | Individual section views |
+
+<Info>
+  There is no Redux, Zustand, MobX, Jotai, or any other external state library in the dependency tree. All application state is either component-local `useState` or propagated via the `SettingsContext`.
+</Info>

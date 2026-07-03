@@ -1,0 +1,146 @@
+---
+title: "Dashboard Sidebar Navigation: Groups and Routing"
+sidebarTitle: "Navigation"
+description: "PC Connect's sidebar is organized into four nav groups — ADMIN, ENROLLMENT, OVERVIEW, REPORTS — powered by hash-based tab routing in App.tsx."
+---
+
+The PC Connect dashboard uses a persistent sidebar navigation built in `Nav` (`src/layouts/dashboard/nav.tsx`) and configured in `navConfig` (`src/layouts/dashboard/config-navigation.tsx`). The sidebar is a MUI `Drawer` — rendered as a permanent desktop drawer on `lg`+ screens (360px wide, collapsible to 90px) and as a modal overlay drawer on smaller screens. Navigation is hash-based: each item carries a `path` string (e.g. `#users-management`) that maps directly to a `case` in the `renderTabContent()` switch in `App.tsx`.
+
+## TypeScript Interfaces
+
+The navigation configuration is strongly typed with two interfaces:
+
+```ts
+// src/layouts/dashboard/config-navigation.tsx
+
+export interface NavItem {
+  title: string;   // Display label shown in the sidebar
+  path: string;    // Hash string used as the activeTab key
+  icon: ReactNode; // Custom SVG icon component
+}
+
+export interface NavGroup {
+  subheader: string; // All-caps section heading (e.g. 'ADMIN')
+  items: NavItem[];  // Array of nav items in this group
+}
+```
+
+## Navigation Groups
+
+The `navConfig` array exports four `NavGroup` objects. Each group is separated by a primary-colored 1px horizontal divider in the expanded sidebar.
+
+### ADMIN
+
+Administrative platform settings.
+
+| Title | Path | Icon |
+|---|---|---|
+| Users Management | `#users-management` | `UsersIcon` |
+| Insurance Payers | `#insurance-payers` | `CreditCardIcon` |
+| Plaid | `#plaid` | `PlaidLockIcon` |
+
+### ENROLLMENT
+
+Provider and client enrollment workflows.
+
+| Title | Path | Icon |
+|---|---|---|
+| Dashboard | `#enrollment-dashboard` | `LayoutGridIcon` |
+| Provider Management | `#provider-management` | `UserCheckIcon` |
+| Client Management | `#client-management` | `BuildingIcon` |
+| Client Group | `#client-group` | `UsersGroupIcon` |
+
+### OVERVIEW
+
+Day-to-day clinical and operational views.
+
+| Title | Path | Icon |
+|---|---|---|
+| Home | `#dashboard` | `HomeIcon` |
+| Active Incomplete Cases | `#active-incomplete-cases` | `FileCheckIcon` |
+| ED Floor Visits | `#ed-floor-visits` | `ActivityIcon` |
+| Educational Resources | `#educational-resources` | `GraduationCapIcon` |
+
+### REPORTS
+
+Reporting and audit tools.
+
+| Title | Path | Icon |
+|---|---|---|
+| Report Management | `#report-management` | `ClipboardListIcon` |
+
+---
+
+## How Routing Works
+
+PC Connect does not use React Router. Instead, routing is managed entirely through a single `activeTab` state string in `App.tsx`, passed down through `DashboardLayout` to `Nav`. Clicking a nav item calls `setActiveTab(item.path)` and `onCloseNav()`.
+
+```tsx
+// src/App.tsx — AppContent (simplified)
+const [activeTab, setActiveTab] = useState('#dashboard');
+
+const renderTabContent = () => {
+  switch (activeTab) {
+    case '#dashboard':              return <AppView onNavigate={setActiveTab} />;
+    case '#users-management':       return <UsersManagementView />;
+    case '#insurance-payers':       return <InsurancePayersContent />;
+    case '#plaid':                  return <PlaidContent />;
+    case '#enrollment-dashboard':   return <EnrollmentDashboardContent />;
+    case '#provider-management':    return <ProviderManagementContent />;
+    case '#client-management':
+    case '#client-profile':         return <ClientManagementView activeTab={activeTab} setActiveTab={setActiveTab} />;
+    case '#client-group':           return <ClientGroupContent />;
+    case '#active-incomplete-cases':return <ActiveIncompleteCasesView />;
+    case '#ed-floor-visits':        return <EDFloorVisitsContent />;
+    case '#educational-resources':  return <EducationalResourcesView />;
+    case '#report-management':      return <ReportManagementContent />;
+    default:                        return <AppView />;
+  }
+};
+```
+
+The header's `TAB_TITLES` record maps the same hash keys to human-readable page titles displayed in the `AppBar`:
+
+```ts
+// src/layouts/dashboard/header.tsx
+const TAB_TITLES: Record<string, string> = {
+  '#dashboard':               'Hi, Welcome Back 👋',
+  '#users-management':        'Users Management',
+  '#insurance-payers':        'Insurance Payers',
+  '#plaid':                   'Plaid Integration',
+  '#enrollment-dashboard':    'Enrollment Analytics',
+  '#provider-management':     'Provider Management',
+  '#client-management':       'Client Management',
+  '#client-profile':          'Client Profile',
+  '#client-group':            'Client Groups',
+  '#active-incomplete-cases': 'Active Incomplete Cases',
+  '#ed-floor-visits':         'ED Floor Visits',
+  '#educational-resources':   'Educational Resources',
+  '#report-management':       'Report Management',
+};
+```
+
+---
+
+## Sidebar Collapse Behavior
+
+The desktop sidebar supports a collapsed mode (90px) toggled via a floating `IconButton` that sits `−16px` outside the sidebar's right border. In collapsed mode:
+
+- Group subheader labels and nav item labels are hidden (opacity transitions to `0`, font-size to `0px`).
+- Nav items become circular buttons (`borderRadius: '100%'`, `60×60px`).
+- A `PCTooltip` with `placement="right"` reveals the item's title on hover.
+- The toggle button icon switches between `ChevronLeft` (expanded) and `ChevronRight` (collapsed).
+
+```tsx
+// Nav width constants (nav.tsx)
+const NAV_WIDTH = 360; // expanded
+// collapsed width = 90 (set in DashboardLayout state)
+```
+
+Active items are highlighted with `color: theme.palette.primary.main` and `bgcolor: alpha(GREY[300], 1)`. The `#client-profile` path is treated as active for the `#client-management` item:
+
+```tsx
+const active =
+  activeTab === item.path ||
+  (item.path === '#client-management' && activeTab === '#client-profile');
+```

@@ -1,0 +1,46 @@
+---
+title: "Compiling and Exporting Reports with Report Management"
+sidebarTitle: "Reports"
+description: "Compile spreadsheets, run medical audits, and generate PDF files from your PC Connect data. Initiate report jobs directly from the Report Management view."
+---
+
+Report Management enables your team to compile spreadsheets, run medical audits, and produce PDF files from PC Connect data. The view provides a central entry point for triggering report generation jobs, keeping all output compilation in one place rather than scattered across individual modules.
+
+## Navigation
+
+<CardGroup cols={2}>
+  <Card title="Sidebar" icon="sidebar" href="#report-management">
+    REPORTS → Report Management
+  </Card>
+  <Card title="Dashboard Home" icon="house" href="#dashboard">
+    Select the Report Management card on the dashboard home screen
+  </Card>
+</CardGroup>
+
+## What Report Management Does
+
+From this view you can initiate the compilation of three output types:
+
+- **Spreadsheets** — tabular exports of your operational data.
+- **Medical audits** — structured audit documents derived from clinical and billing records.
+- **PDF files** — formatted document exports ready for distribution or archiving.
+
+## Compiling a Spreadsheet
+
+Click the **Compile Spreadsheet** button to start a spreadsheet compilation job for the current dataset.
+
+```tsx
+<Button variant="contained" color="primary">
+  Compile Spreadsheet
+</Button>
+```
+
+## CSV Exports in Individual Modules
+
+<Note>
+  Quick CSV exports are also available directly within individual modules. The **Active Incomplete Cases** view exports filtered case data via its toolbar **Export** button, and the **Users Management** and **Client Management** views include their own per-table export controls. Use those in-module exports for targeted, filtered downloads, and use Report Management for broader compiled outputs.
+</Note>
+
+<Tip>
+  Use Report Management when you need a consolidated output that spans multiple data sources or requires audit formatting, rather than a raw data dump from a single table.
+</Tip>

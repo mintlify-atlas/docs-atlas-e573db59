@@ -1,0 +1,155 @@
+---
+title: "Setting Up and Running PC Connect for Local Development"
+sidebarTitle: "Local Dev"
+description: "Clone PC Connect, install dependencies, and start the Vite dev server. Covers npm scripts, ESLint flat config, and TypeScript project references."
+---
+
+PC Connect uses Vite 8 as its development server, which means instant startup times and fast Hot Module Replacement (HMR) while you work. The setup is intentionally lean: clone the repo, install dependencies, and a single command puts the full dashboard in your browser.
+
+## Prerequisites
+
+- **Node.js 18 or later** — Vite 8 requires Node 18+
+- A package manager: **npm** (bundled with Node), **yarn**, or **pnpm**
+
+## Getting started
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone <your-repository-url>
+    cd pcconnect
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    <CodeGroup>
+      ```bash npm
+      npm install
+      ```
+
+      ```bash yarn
+      yarn
+      ```
+
+      ```bash pnpm
+      pnpm install
+      ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Start the development server">
+    ```bash
+    npm run dev
+    ```
+
+    Vite will start on **http://localhost:5173** by default. The terminal output confirms the URL:
+
+    ```
+    VITE v8.x.x  ready in Xms
+
+    ➜  Local:   http://localhost:5173/
+    ➜  Network: use --host to expose
+    ```
+  </Step>
+
+  <Step title="Log in with demo credentials">
+    The login screen requires:
+
+    | Field | Value |
+    |---|---|
+    | Email | `demo@pcconnect.com` |
+    | Password | `password123` |
+    | HIPAA acknowledgement | ✅ Must be checked |
+
+    After successful login you will land on the main dashboard (`#dashboard`).
+  </Step>
+</Steps>
+
+## Available scripts
+
+All scripts are defined in `package.json`:
+
+| Script | Command | Description |
+|---|---|---|
+| `dev` | `vite` | Start Vite dev server with HMR on `localhost:5173` |
+| `build` | `tsc -b && vite build` | Type-check then produce a production bundle in `dist/` |
+| `lint` | `eslint .` | Run ESLint across all `.ts` and `.tsx` files |
+| `preview` | `vite preview` | Serve the production build locally for final checks |
+
+## TypeScript configuration
+
+`tsconfig.json` is a composite root that delegates to two focused configs:
+
+```json
+{
+  "files": [],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ]
+}
+```
+
+**`tsconfig.app.json`** covers `src/` with strict linting rules enabled — `noUnusedLocals`, `noUnusedParameters`, `noFallthroughCasesInSwitch`, and `erasableSyntaxOnly`. The JSX transform is set to `react-jsx` (no manual React import needed), and `moduleResolution` is `bundler` to match Vite's resolution behaviour.
+
+**`tsconfig.node.json`** covers `vite.config.ts` only, with `"types": ["node"]` so the config file has access to Node type definitions.
+
+## ESLint configuration
+
+PC Connect uses ESLint's modern **flat config** format, defined in `eslint.config.js`:
+
+```js
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      globals: globals.browser,
+    },
+  },
+])
+```
+
+The four rule sets applied are:
+
+| Plugin | What it checks |
+|---|---|
+| `@eslint/js` recommended | Core JavaScript best practices |
+| `typescript-eslint` recommended | TypeScript-specific rules |
+| `eslint-plugin-react-hooks` | Enforces the Rules of Hooks |
+| `eslint-plugin-react-refresh` | Ensures HMR-safe component exports |
+
+The `dist/` folder is excluded from linting via `globalIgnores`.
+
+## Vite configuration
+
+`vite.config.ts` is minimal — it registers the `@vitejs/plugin-react` plugin for JSX/HMR support and raises the chunk-size warning limit to 1000 kB (to accommodate the ApexCharts bundle):
+
+```ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  build: {
+    chunkSizeWarningLimit: 1000,
+  },
+})
+```
+
+<Tip>
+  Open the included `pcconnect.code-workspace` file in VS Code (`File → Open Workspace from File…`) to load the pre-configured workspace settings and get the best editing experience for the project.
+</Tip>

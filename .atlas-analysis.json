@@ -1,0 +1,82 @@
+{
+  "projectType": "saas",
+  "projectName": "PC Connect",
+  "projectDescription": "PC Connect is a healthcare management SaaS dashboard for administering provider enrollments, client accounts, insurance payers, active cases, and educational resources.",
+  "theme": "luma",
+  "primaryColor": "#343c4c",
+  "lightColor": "#8727fc",
+  "darkColor": "#8c51fc",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Overview",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": ["introduction", "getting-started/setup", "getting-started/authentication"]
+          },
+          {
+            "group": "Dashboard",
+            "pages": ["dashboard/overview", "dashboard/navigation", "dashboard/settings"]
+          }
+        ]
+      },
+      {
+        "tab": "Features",
+        "groups": [
+          {
+            "group": "Admin",
+            "pages": ["features/users-management", "features/insurance-payers", "features/plaid-integration"]
+          },
+          {
+            "group": "Enrollment",
+            "pages": ["features/enrollment-dashboard", "features/provider-management", "features/client-management", "features/client-groups"]
+          },
+          {
+            "group": "Operations",
+            "pages": ["features/active-incomplete-cases", "features/ed-floor-visits", "features/educational-resources", "features/report-management"]
+          }
+        ]
+      },
+      {
+        "tab": "Development",
+        "groups": [
+          {
+            "group": "Architecture",
+            "pages": ["development/project-structure", "development/theming", "development/state-management"]
+          },
+          {
+            "group": "Contributing",
+            "pages": ["development/local-development", "development/building"]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Role-based user management (Admin, Provider, Director, User roles)",
+    "Client management with detailed profiles (contact, business, administration, malpractice sections)",
+    "Provider enrollment tracking and management",
+    "Active Incomplete Cases monitoring with real-time data tables",
+    "ED Floor Visits tracking",
+    "Insurance payers configuration and compliance rules",
+    "Plaid bank account integration for secure financial processing",
+    "Educational resources viewer with built-in document reader",
+    "Report management with CSV export",
+    "Light/dark mode theming with corporate magenta color palette",
+    "HIPAA-compliant authentication with disclaimer acknowledgment"
+  ],
+  "publicApiSurface": [
+    "AppView — main dashboard home with module navigation cards",
+    "LoginView — authentication with HIPAA disclaimer, register, and forgot-password flows",
+    "UsersManagementView — tabular user directory with inline editing, filtering, and CSV export",
+    "ClientManagementView — client directory with profile detail view (Contact, Business, Administration, Malpractice cards)",
+    "ActiveIncompleteCasesView — filterable table of active/incomplete medical cases",
+    "EducationalResourcesView — document library with multi-page reader",
+    "SettingsDrawer — app-wide settings panel for theme mode and color presets",
+    "SettingsProvider / useSettings — React context for theme mode and color preset state",
+    "ThemeProvider — MUI theme integration with custom palette, shadows, and typography",
+    "navConfig — sidebar navigation structure grouped by ADMIN, ENROLLMENT, OVERVIEW, and REPORTS",
+    "DashboardLayout — top-level shell with responsive sidebar nav and header"
+  ]
+}

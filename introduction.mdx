@@ -1,0 +1,61 @@
+---
+title: "PC Connect — Healthcare Management SaaS Dashboard"
+sidebarTitle: "Introduction"
+description: "PC Connect is a HIPAA-aware healthcare management dashboard for medical billing organizations and anesthesia staffing companies."
+---
+
+PC Connect is a full-featured healthcare management SaaS dashboard purpose-built for medical billing organizations and anesthesia staffing companies. It provides a single, centralized interface for administrators to manage provider enrollment, client accounts, insurance payers, active cases, ED floor visits, educational resources, and reports — eliminating the need to juggle multiple disconnected tools and spreadsheets.
+
+## What Problem It Solves
+
+Healthcare administrative teams face the challenge of coordinating data across enrollment workflows, payer integrations, client hierarchies, and compliance requirements — all while maintaining strict regulatory standards. PC Connect addresses this by unifying every administrative function into one role-based dashboard that enforces HIPAA acknowledgment at login and keeps Protected Health Information (PHI) access auditable and intentional.
+
+## Key Features
+
+- **HIPAA Disclaimer Enforcement** — Users must explicitly acknowledge the HIPAA disclaimer at every login before gaining access to PHI data.
+- **Role-Based Navigation** — The sidebar organizes functionality into four permission-aware groups: ADMIN, ENROLLMENT, OVERVIEW, and REPORTS.
+- **Light & Dark Mode** — A persistent theme toggle (stored in `localStorage`) switches between light and dark palettes across the entire application.
+- **MUI v9 Component Library** — Built on `@mui/material` v9 with a custom Magenta Corporate color preset (`primary: #B81A80`) and Emotion-based styling.
+- **React 19 + TypeScript** — Fully typed codebase using React 19 with strict TypeScript (`~6.0.2`) for reliability.
+- **Vite 8 Dev Server** — Instant HMR (Hot Module Replacement) via Vite 8 with a `@vitejs/plugin-react` configuration.
+- **ApexCharts Integration** — Data visualization powered by `apexcharts` and `react-apexcharts` for enrollment analytics.
+- **Plaid Integration Panel** — Dedicated section for secure bank account verification and transaction processing settings.
+- **Client & Provider Management** — Full CRUD interfaces for providers, individual clients, client profiles, and client groups.
+- **Settings Drawer** — A slide-in panel accessible via the header for account settings and session logout.
+
+## Get Started
+
+<CardGroup cols={2}>
+  <Card
+    title="Setup"
+    icon="gear"
+    href="/getting-started/setup"
+  >
+    Clone the repo, install dependencies, and run the Vite dev server in minutes.
+  </Card>
+  <Card
+    title="Authentication"
+    icon="lock"
+    href="/getting-started/authentication"
+  >
+    Understand the HIPAA-compliant login flow, demo credentials, and registration.
+  </Card>
+  <Card
+    title="Dashboard Overview"
+    icon="house"
+    href="/dashboard/overview"
+  >
+    Explore the five home-screen module cards and the News widget.
+  </Card>
+  <Card
+    title="Users Management"
+    icon="users"
+    href="/features/users-management"
+  >
+    Learn how to manage platform users from the ADMIN navigation group.
+  </Card>
+</CardGroup>
+
+<Note>
+  PC Connect handles Protected Health Information (PHI) regulated under HIPAA. All users must acknowledge the HIPAA disclaimer at login. Printed materials from the dashboard must be properly destroyed when no longer needed, and PHI must never be distributed via electronic means outside authorized channels.
+</Note>

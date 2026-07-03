@@ -1,0 +1,60 @@
+---
+title: "Insurance Payers — PC Connect Admin Guide"
+sidebarTitle: "Insurance Payers"
+description: "Configure payor API keys, gateways, and active compliance rules. Manage electronic claims transfer connections from one central admin screen."
+---
+
+The Insurance Payers section is where administrators configure all connections to insurance and payor systems used for electronic claims processing. From here you can manage payor API keys, define gateway settings, and maintain active compliance rules that govern how claims are submitted on behalf of patients.
+
+<Info>
+  This feature manages direct connections to insurance and payor systems for electronic claims transfer. Changes here may affect live claims submission workflows — review all settings carefully before saving.
+</Info>
+
+## Accessing Insurance Payers
+
+Navigate to **ADMIN → Insurance Payers** in the left-hand sidebar to open this section. The section is available to users with Admin-level permissions.
+
+## Active Insurance Integrations card
+
+The main content area contains the **Active Insurance Integrations** card, which lists all currently configured payor connections and provides the entry point for adding new ones.
+
+<CardGroup cols={1}>
+  <Card title="Active Insurance Integrations" icon="hospital" href="#add-payer-connection">
+    Displays all active payor connections and their associated gateway and compliance rule configuration. Use the **Add Payer Connection** button to register a new integration.
+  </Card>
+</CardGroup>
+
+### Configure electronic claims transfer details
+
+Within the Active Insurance Integrations card, each payor connection allows you to configure the details required for electronic claims transfer. This includes the payor API keys and gateway routing information that PC Connect uses when submitting claims electronically.
+
+<Warning>
+  Entering incorrect API keys or gateway details for a payor will prevent electronic claims from being submitted successfully. Always verify credentials with your payor or clearinghouse before saving.
+</Warning>
+
+## Adding a payer connection
+
+Click the **Add Payer Connection** button inside the Active Insurance Integrations card to begin registering a new insurance or payor integration.
+
+<Steps>
+  <Step title="Navigate to Insurance Payers">
+    Go to **ADMIN → Insurance Payers** in the sidebar.
+  </Step>
+  <Step title="Open the Add Payer form">
+    Click the **Add Payer Connection** button inside the Active Insurance Integrations card.
+  </Step>
+  <Step title="Enter payor credentials">
+    Provide the payor API key, gateway endpoint, and any applicable compliance rule identifiers supplied by your payor or clearinghouse.
+  </Step>
+  <Step title="Save the connection">
+    Confirm your entries and save. The new payor connection will appear in the Active Insurance Integrations card.
+  </Step>
+</Steps>
+
+## Section overview
+
+| Setting area | Purpose |
+|---|---|
+| Payor API keys | Credentials used to authenticate with a specific insurance or payor system |
+| Gateways | Routing configuration that determines how electronic claims reach the payor |
+| Active compliance rules | Rules that govern the format and content of submitted claims for this payor |

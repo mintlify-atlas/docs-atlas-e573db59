@@ -1,0 +1,143 @@
+---
+title: "Accessing Clinical and Compliance Educational Resources"
+sidebarTitle: "Education"
+description: "Browse a curated library of clinical protocols, billing regulations, and compliance guides. Read, zoom, print, and download from the built-in viewer."
+---
+
+Educational Resources provides a document library of clinical protocols, billing regulations, and compliance guides for PC Connect staff and providers. Documents open inside a built-in PDF-style viewer with zoom, page navigation, print, and download controls — no external reader required.
+
+## Navigation
+
+<CardGroup cols={2}>
+  <Card title="Sidebar" icon="sidebar" href="#educational-resources">
+    OVERVIEW → Educational Resources
+  </Card>
+  <Card title="Dashboard Home" icon="house" href="#dashboard">
+    Select the Educational Resources card on the dashboard home screen
+  </Card>
+</CardGroup>
+
+## Data Model
+
+The library is built on two TypeScript interfaces:
+
+```tsx
+interface DocumentPage {
+  pageNumber: number;
+  title: string;
+  sections: {
+    heading: string;
+    paragraphs: string[];
+    listItems?: string[];   // Optional checklist items rendered with CheckCircle icons
+  }[];
+}
+
+interface DocumentItem {
+  id: string;
+  title: string;
+  pages: DocumentPage[];
+}
+```
+
+Each `DocumentItem` contains one or more `DocumentPage` objects. Each page holds an array of `sections`, where every section has a heading, one or more paragraphs, and an optional list of checklist items.
+
+## Available Documents
+
+The library ships with the following seven documents:
+
+| # | Title | Pages |
+|---|---|---|
+| 1 | 2023 Observation Services Documentation | 2 |
+| 2 | Critical Care | 2 |
+| 3 | EKG Documentation | 1 |
+| 4 | MAT ED Documentation | 2 |
+| 5 | Medical Student Documentation and Billing Guidelines | 2 |
+| 6 | Moderate Sedation | 2 |
+| 7 | Updated Teaching Physician Doc Guide 2021 | 1 |
+
+### Document Pages at a Glance
+
+<Steps>
+  <Step title="2023 Observation Services Documentation">
+    - **Page 1 — 2023 Observation Services Guide**: Introduction to observation services and clinical justification & admission criteria.
+    - **Page 2 — Billing and Compliance Framework**: Coding and medical necessity requirements, plus a documentation audit checklist.
+  </Step>
+  <Step title="Critical Care">
+    - **Page 1 — Critical Care Medicine Protocols**: General admission criteria and vasoactive medication protocols.
+    - **Page 2 — Mechanical Ventilation Standards**: Lung-protective ventilation strategy with ARDS tidal volume and PEEP guidance.
+  </Step>
+  <Step title="EKG Documentation">
+    - **Page 1 — 12-Lead EKG Placement and Reporting**: Anatomical electrode placement (V1–V6) and interpretive interval metrics (PR, QRS, QTc).
+  </Step>
+  <Step title="MAT ED Documentation">
+    - **Page 1 — Medication Assisted Treatment in the ED**: Program overview, goals, and COWS scoring guidance.
+    - **Page 2 — Buprenorphine Induction & Discharge**: Induction dosing guidelines and safe discharge / warm hand-off procedures.
+  </Step>
+  <Step title="Medical Student Documentation and Billing Guidelines">
+    - **Page 1 — Medical Student Documentation Compliance**: CMS guidelines for teaching settings and student participation limits.
+    - **Page 2 — Attestation Templates**: Required attesting verbiage and EHR macro configuration guidance.
+  </Step>
+  <Step title="Moderate Sedation">
+    - **Page 1 — Moderate Sedation Protocol & Standards**: Scope of procedure and pre-procedure verification checklist.
+    - **Page 2 — Intra-Procedure & Recovery Monitoring**: Intra-procedure monitoring requirements and Aldrete Score discharge criteria.
+  </Step>
+  <Step title="Updated Teaching Physician Doc Guide 2021">
+    - **Page 1 — Teaching Physician Guidelines (2021 Update)**: Key updates for E/M documentation coding and supervision levels.
+  </Step>
+</Steps>
+
+## Layout
+
+The view uses a two-column layout:
+
+- **Left sidebar** — scrollable list of all `DocumentItem` titles. The active document is highlighted. Clicking a title loads that document and resets the viewer to page 1.
+- **Right panel** — the document viewer card displaying the currently selected page.
+
+```tsx
+// Two-column grid
+gridTemplateColumns: { xs: '1fr', md: '370px 1fr' }
+```
+
+On small screens (`xs`), the layout collapses to a single column.
+
+## Document Viewer
+
+The viewer renders document content as structured HTML styled to resemble a PDF page — complete with a dark toolbar, white paper canvas, branded header, and footer.
+
+### Viewer Toolbar Controls
+
+The dark top toolbar exposes the following controls:
+
+| Control | Icon | Action |
+|---|---|---|
+| Print | `Printer` | Triggers a print job for the active document |
+| Download | `Download` | Downloads the active document as a `.pdf` file |
+| Previous page | `ChevronLeft` | Navigates to the previous page (disabled on page 1) |
+| Page indicator | — | Displays current page and total pages (e.g. `1 / 2`) |
+| Next page | `ChevronRight` | Navigates to the next page (disabled on last page) |
+| Zoom out | `ZoomOut` | Decreases zoom by 10% (minimum 70%) |
+| Zoom level | — | Displays the current zoom percentage (e.g. `100%`) |
+| Zoom in | `ZoomIn` | Increases zoom by 10% (maximum 150%) |
+
+```tsx
+// Zoom state — range: 70–150, step: 10
+const [zoomScale, setZoomScale] = useState(100);
+
+// Page navigation state
+const [currentPageNum, setCurrentPageNum] = useState(1);
+
+// Selected document state — defaults to 'MAT ED Documentation' (id: '4')
+const [selectedDocId, setSelectedDocId] = useState('4');
+```
+
+### Document Page Structure
+
+Each rendered page contains:
+
+1. **Header** — branded `Bookmark` icon, "Corporate Resource" label, document title, and current page indicator.
+2. **Sections** — each section renders a left-bordered heading followed by body paragraphs. When `listItems` are present, each item is prefixed with a `CheckCircle` icon.
+3. **Footer** — copyright line (`PC Connect LLC © 2026 • Confidential clinical resource`) and a revision tag (`REV. 06.26`).
+
+<Note>
+  The viewer opens to the **MAT ED Documentation** document by default, reflecting the default `selectedDocId` state value of `'4'`.
+</Note>

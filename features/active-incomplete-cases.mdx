@@ -1,0 +1,106 @@
+---
+title: "Tracking Active and Incomplete Cases Across Providers"
+sidebarTitle: "Active Cases"
+description: "Monitor open and pending medical cases by provider. Search, filter, and export case counts with last-comment timestamps in a paginated table."
+---
+
+Active Incomplete Cases is the central tracking view for medical cases that are open or pending completion across your provider network. Each row represents a single provider and shows the total number of cases alongside how many remain pending, as well as the date and time of the most recent comment — giving your team a clear picture of where follow-up action is needed.
+
+## Navigation
+
+Access this view from either the sidebar or the dashboard home:
+
+<CardGroup cols={2}>
+  <Card title="Sidebar" icon="sidebar" href="#active-incomplete-cases">
+    OVERVIEW → Active Incomplete Cases
+  </Card>
+  <Card title="Dashboard Home" icon="house" href="#dashboard">
+    Select the Active Incomplete Cases card on the dashboard home screen
+  </Card>
+</CardGroup>
+
+## Data Model
+
+Each row in the table is backed by the `ActiveIncompleteCase` interface:
+
+```tsx
+interface ActiveIncompleteCase {
+  id: string;
+  provider: string;
+  caseCount: string;          // Format: 'total/pending' (e.g. '285/248')
+  lastCommentDate: string;    // MM/DD/YYYY or 'invalid date'
+  time?: string;              // e.g. '3:12 pm' — absent when date is invalid
+  isInvalidDate?: boolean;    // true when lastCommentDate cannot be parsed
+}
+```
+
+### Case Count Format
+
+The `caseCount` field uses a `total/pending` slash-delimited format. For example, a value of `285/248` means **285 total cases** with **248 still pending**.
+
+<Note>
+  When `isInvalidDate` is `true`, the `lastCommentDate` field will display as **"invalid date"** and no time value will be shown. This can occur when the underlying source record does not contain a parsable date.
+</Note>
+
+## Sample Provider Data
+
+The table is seeded with the following providers:
+
+| Provider | Case Count | Last Comment Date |
+|---|---|---|
+| Cardinal Emergency Providers 523-155 | 285/248 | 05/27/2026 3:12 pm |
+| Ignite Emergency Physicians - [Desert Valley] 523-118 | 277/212 | 05/04/2026 4:13 pm |
+| Mountain View Emergency | 284/183 | 04/30/2026 2:10 pm |
+| Heartland Anesthesia 523-131 - 3 (Apex City ASC) | 150/48 | 04/30/2026 1:12 pm |
+| EPA San Jose - SCValley Medical Center (Sc) | 278/112 | 04/29/2026 2:22 pm |
+| Healy Critical Care Services | 1956/104 | 03/24/2026 1:10 pm |
+| Ignite Emergency Physicians - [Victorville] 523-118 | 22/04 | 06/08/2026 3:12 pm |
+| Ignite Emergency Physicians - 2 [Chino Valley] 523-118 | 95/81 | 05/28/2026 3:12 pm |
+| Heartland Anesthesia 523-131- 1 (Asc of Central Iowa) | 50/50 | invalid date |
+| South Coast Emerg Med Grp | 51/40 | 07/07/2026 3:12 pm |
+| Mountain View UC - Elko (Turkey) | 151/35 | 04/23/2026 2:12 pm |
+| Emergency Physicians at San Gabriel Valley | 48/39 | 05/05/2026 4:12 pm |
+| OC Emergency Physicians 523-154 | 154/56 | 05/06/2026 3:12 pm |
+
+## Table Features
+
+### Global Search
+
+A search bar above the table filters all visible rows simultaneously across the **Provider**, **Case Count**, and **Last Comment Date** columns. Results update on every keystroke and the page resets to 1 automatically.
+
+### Per-Column Filters
+
+Toggle the filter row using the **Filters** button in the toolbar. When visible, an inline text input appears beneath each column header:
+
+| Column | Filter Label | Behavior |
+|---|---|---|
+| Provider | Contains | Case-insensitive substring match |
+| Case Count | Contains | Matches any part of the `total/pending` string |
+| Last Comment Date | Is | Matches date string or time value |
+
+The global search and column filters are applied together — a row must satisfy **all** active conditions to appear.
+
+### Pagination
+
+<ParamField body="rowsPerPageOptions" type="number[]" default="[5, 10, 20]">
+  Choose how many rows to display per page. Changing rows-per-page resets the view to page 1.
+</ParamField>
+
+### CSV Export
+
+Click the **Export** button (Download icon) in the toolbar to download all currently **filtered** rows as a CSV file named `active_incomplete_cases.csv`. The export includes three columns: **Provider**, **Case Count**, and **Last Comment Date** (with time appended, or `"invalid date"` for unparsable entries).
+
+<Tip>
+  Apply your filters before clicking Export to download only the subset of cases you need rather than the full list.
+</Tip>
+
+## Toolbar Reference
+
+```tsx
+// Toolbar controls rendered above the table
+<TextField placeholder="Search..." startAdornment={<Search />} />
+<Button startIcon={<Filter />}>Filters</Button>
+<Button startIcon={<Download />} onClick={handleExport}>Export</Button>
+```
+
+The **Filters** button toggles the inline filter row. Clicking it again hides the filter inputs (filter values are preserved in state while hidden).

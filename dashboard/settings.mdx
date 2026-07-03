@@ -1,0 +1,161 @@
+---
+title: "Settings Drawer: Theme Mode and Color Presets"
+sidebarTitle: "Settings"
+description: "PC Connect's SettingsProvider and SettingsDrawer manage light/dark mode and color preset selection, accessible via the useSettings hook."
+---
+
+PC Connect ships a lightweight settings system composed of three files: `settings-context.tsx`, `settings-provider.tsx`, and `settings-drawer.tsx`. Together they expose a React context that persists theme preferences to `localStorage` and delivers a slide-in drawer for account actions. The settings system wraps the entire application — both authenticated and unauthenticated states — so theme preferences are always available.
+
+## SettingsContextType Interface
+
+The context surface is defined by the `SettingsContextType` interface in `settings-context.tsx`:
+
+```ts
+// src/components/settings/settings-context.tsx
+
+export interface SettingsContextType {
+  themeMode: 'light' | 'dark';
+  themeColorPreset: ColorPresetId;
+  onToggleMode: () => void;
+  onChangeColorPreset: (preset: ColorPresetId) => void;
+}
+```
+
+| Field | Type | Description |
+|---|---|---|
+| `themeMode` | `'light' \| 'dark'` | The current theme mode, persisted in `localStorage` under key `"themeMode"`. Defaults to `'light'`. |
+| `themeColorPreset` | `ColorPresetId` | The active color preset ID, persisted under `"themeColorPreset"`. Defaults to `'default'`. |
+| `onToggleMode` | `() => void` | Toggles `themeMode` between `'light'` and `'dark'`. |
+| `onChangeColorPreset` | `(preset: ColorPresetId) => void` | Sets a new active color preset by ID. |
+
+---
+
+## ColorPresetId and Default Preset
+
+`ColorPresetId` is defined in `src/theme/palette.ts` as a union type with a single member:
+
+```ts
+export type ColorPresetId = 'default';
+```
+
+The `'default'` preset is named **"Magenta (Corporate)"** and provides the following primary palette tokens:
+
+| Token | Value |
+|---|---|
+| `primary.main` | `#B81A80` |
+| `primary.light` | `#D01A8E` |
+| `primary.dark` | `#80004E` |
+| `primary.darker` | `#4D002E` |
+| `primary.lighter` | `#FEE7F2` |
+| `primary.hover` | `#FDEEF7` |
+| `primary.contrastText` | `#FFFFFF` |
+
+---
+
+## The `useSettings` Hook
+
+The `useSettings()` hook provides access to the settings context anywhere inside `SettingsProvider`. Calling it outside the provider boundary throws a descriptive error.
+
+```ts
+// src/components/settings/settings-context.tsx
+export function useSettings() {
+  const context = useContext(SettingsContext);
+  if (!context) {
+    throw new Error('useSettings must be used within a SettingsProvider');
+  }
+  return context;
+}
+```
+
+### Usage Example
+
+```tsx
+import { useSettings } from 'src/components/settings/settings-context';
+
+function ThemeToggleButton() {
+  const { themeMode, onToggleMode } = useSettings();
+
+  return (
+    <button onClick={onToggleMode}>
+      Switch to {themeMode === 'light' ? 'dark' : 'light'} mode
+    </button>
+  );
+}
+```
+
+---
+
+## SettingsProvider
+
+`SettingsProvider` is a wrapper component that initializes state from `localStorage` and provides all context values to its children tree.
+
+```tsx
+// src/components/settings/settings-provider.tsx (simplified)
+export function SettingsProvider({ children }: { children: ReactNode }) {
+  const [themeMode, setThemeMode] = useState<'light' | 'dark'>(() => {
+    const saved = localStorage.getItem('themeMode');
+    if (saved === 'light' || saved === 'dark') return saved;
+    return 'light'; // default
+  });
+
+  const [themeColorPreset, setThemeColorPreset] = useState<ColorPresetId>(() => {
+    const saved = localStorage.getItem('themeColorPreset');
+    if (saved) return saved as ColorPresetId;
+    return 'default';
+  });
+
+  const onToggleMode = () =>
+    setThemeMode((prev) => (prev === 'light' ? 'dark' : 'light'));
+
+  const onChangeColorPreset = (preset: ColorPresetId) =>
+    setThemeColorPreset(preset);
+
+  // Changes are synced to localStorage via useEffect
+  return (
+    <SettingsContext.Provider value={{ themeMode, themeColorPreset, onToggleMode, onChangeColorPreset }}>
+      {children}
+    </SettingsContext.Provider>
+  );
+}
+```
+
+`SettingsProvider` is mounted at the root of `App.tsx`, above both `ThemeProvider` and the authenticated/unauthenticated content switch.
+
+---
+
+## SettingsDrawer
+
+`SettingsDrawer` is a right-anchored MUI `Drawer` (width: 360px) opened by clicking the account icon button in the dashboard header. It accepts three props:
+
+| Prop | Type | Description |
+|---|---|---|
+| `open` | `boolean` | Controls drawer visibility. |
+| `onClose` | `() => void` | Closes the drawer. |
+| `onLogout` | `() => void` | Triggers the logout action, setting `isAuthenticated` to `false` in `App.tsx`. |
+
+The drawer renders:
+
+1. **Header row** — A title ("Ajustes") and an `X` close icon button.
+2. **Divider** — A full-width MUI `Divider`.
+3. **Content area** — A flexible scrollable region (currently empty, reserved for future settings controls).
+4. **Logout button** — A full-width `variant="signIn"` button with a `LogOut` icon that calls `onLogout` when pressed.
+
+```tsx
+// Accessing SettingsDrawer from the header (App.tsx → AppContent)
+const [settingsOpen, setSettingsOpen] = useState(false);
+
+<DashboardLayout onOpenSettings={() => setSettingsOpen(true)} ...>
+  {renderTabContent()}
+  <SettingsDrawer
+    open={settingsOpen}
+    onClose={() => setSettingsOpen(false)}
+    onLogout={onLogout}
+  />
+</DashboardLayout>
+```
+
+The header's account icon button (`UsersIcon`, a custom SVG) triggers `onOpenSettings`, which sets `settingsOpen` to `true` and slides in the drawer from the right.
+
+<Info>
+  Theme mode preference and color preset selection are both persisted to `localStorage` automatically via `useEffect` inside `SettingsProvider`. This means the user's chosen theme survives page refreshes without any additional configuration.
+</Info>

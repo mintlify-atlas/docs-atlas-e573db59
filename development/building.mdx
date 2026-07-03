@@ -1,0 +1,113 @@
+---
+title: "Compiling and Building PC Connect for Production Deployment"
+sidebarTitle: "Building"
+description: "How to compile and bundle PC Connect for production: the tsc + Vite build pipeline, dist/ output structure, preview server, and deployment guidance."
+---
+
+Building PC Connect for production is a two-phase process: TypeScript validates the entire source tree first, then Vite bundles everything into an optimised `dist/` directory ready for static hosting. Because the project is marked `"private": true` in `package.json`, it is never published to a package registry — it is always deployed as a built static site.
+
+## Build command
+
+```bash
+npm run build
+```
+
+This single command runs the full script defined in `package.json`:
+
+```json
+"build": "tsc -b && vite build"
+```
+
+The two steps execute sequentially:
+
+1. **`tsc -b`** — TypeScript's composite build mode. It reads `tsconfig.json`, which references both `tsconfig.app.json` (covers `src/`) and `tsconfig.node.json` (covers `vite.config.ts`). If any type error exists anywhere in the source, this step fails and Vite never runs.
+
+2. **`vite build`** — Vite bundles the application, tree-shakes unused code, splits vendor chunks, and writes minified HTML, CSS, and JS to `dist/`.
+
+<Note>
+  The chunk-size warning threshold is set to 1000 kB in `vite.config.ts` to accommodate the ApexCharts library. Bundles under this size will not trigger a build warning.
+</Note>
+
+## Production build steps
+
+<Steps>
+  <Step title="Run the build">
+    ```bash
+    npm run build
+    ```
+
+    A successful build prints a file summary to the terminal listing every generated chunk and asset with its compressed size.
+  </Step>
+
+  <Step title="Inspect the dist/ directory">
+    ```bash
+    ls dist/
+    ```
+
+    The output directory typically contains:
+
+    ```
+    dist/
+    ├── index.html          # Entry HTML with hashed asset references
+    ├── assets/
+    │   ├── index-[hash].js   # Main application bundle
+    │   ├── index-[hash].css  # Extracted styles
+    │   └── ...               # Images and other static assets
+    └── ...                   # Files copied from public/
+    ```
+
+    Assets from the `public/` folder (such as `favicon.svg` and `icons.svg`) are copied to `dist/` as-is with no hashing.
+  </Step>
+
+  <Step title="Preview the production build locally">
+    ```bash
+    npm run preview
+    ```
+
+    This starts Vite's built-in preview server and serves `dist/` locally so you can verify the production bundle behaves correctly before deploying.
+
+    ```
+    ➜  Local:   http://localhost:4173/
+    ```
+
+    <Warning>
+      `npm run preview` serves the pre-built `dist/` folder. It does not rebuild on file changes. Re-run `npm run build` if you make changes and want to verify them again.
+    </Warning>
+  </Step>
+
+  <Step title="Deploy dist/ to your hosting provider">
+    Copy the contents of `dist/` to any static hosting service (Netlify, Vercel, AWS S3 + CloudFront, GitHub Pages, etc.). Because PC Connect is a single-page application using hash-based navigation, no special server-side routing configuration is required — all routes resolve from `index.html`.
+  </Step>
+</Steps>
+
+## TypeScript build configuration reference
+
+Both configs under the `tsconfig.json` composite root share these key compiler options:
+
+| Option | Value | Effect |
+|---|---|---|
+| `target` | `es2023` | Output modern JavaScript |
+| `module` | `esnext` | ESM output for Vite |
+| `moduleResolution` | `bundler` | Matches Vite's resolver |
+| `noEmit` | `true` | TypeScript checks only; Vite handles emit |
+| `noUnusedLocals` | `true` | Fails on unused variables |
+| `noUnusedParameters` | `true` | Fails on unused function params |
+| `erasableSyntaxOnly` | `true` | Disallows syntax that TypeScript cannot erase |
+
+<Info>
+  `noEmit: true` means TypeScript does **not** write `.js` files itself. Type-checking is purely a validation gate; Vite's esbuild transformer handles the actual transpilation during the bundle step.
+</Info>
+
+## Private package
+
+`package.json` declares `"private": true`, which prevents accidental publishing to npm:
+
+```json
+{
+  "name": "pcconnect",
+  "private": true,
+  "version": "0.0.0"
+}
+```
+
+There is no npm publish workflow. Releases are managed entirely through the static build and deployment pipeline described above.

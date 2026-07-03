@@ -1,0 +1,115 @@
+---
+title: "PC Connect Codebase: Project Structure and Dependencies"
+sidebarTitle: "Structure"
+description: "A walkthrough of the PC Connect source tree, key files, and every runtime and development dependency used in the React 19 + MUI v9 dashboard."
+---
+
+PC Connect is a single-page React application scaffolded with Vite. Understanding the folder layout makes it easier to find components, add new feature sections, or trace how the theme and routing wire together. Every piece of the application — from the login screen to the clinical management views — lives under the `src/` directory, while Vite and TypeScript configuration sit at the project root.
+
+## Directory tree
+
+```
+pcconnect/
+├── public/                    # Served as-is by Vite dev server
+│   ├── favicon.svg
+│   └── icons.svg
+├── src/
+│   ├── assets/                # Static images bundled by Vite
+│   │   ├── logo.png
+│   │   ├── logo.svg
+│   │   ├── logo-small.svg
+│   │   ├── bg-pcc-login.jpg
+│   │   ├── bg-profile.png
+│   │   ├── card-bg-tech.png
+│   │   ├── hero.png
+│   │   └── login-bg.jpg
+│   ├── components/            # Shared UI building blocks
+│   │   ├── logo/
+│   │   ├── pc-tooltip/
+│   │   └── settings/          # SettingsProvider, SettingsContext, SettingsDrawer
+│   ├── layouts/               # App shell
+│   │   └── dashboard/         # Header, nav sidebar, main content area, config-navigation
+│   ├── sections/              # Feature views (one folder per domain)
+│   │   ├── auth/              # LoginView
+│   │   ├── overview/          # AppView (dashboard landing)
+│   │   ├── enrollment/        # ActiveIncompleteCasesView
+│   │   ├── cmanagement/       # ClientManagementView, client profile
+│   │   ├── umanagement/       # UsersManagementView
+│   │   └── educational/       # EducationalResourcesView
+│   ├── theme/                 # MUI theme customisation
+│   │   ├── palette.ts         # Color tokens and getPalette()
+│   │   ├── typography.ts      # Poppins type scale
+│   │   ├── shadows.ts         # lightShadows / darkShadows arrays
+│   │   ├── custom-shadows.ts  # Semantic shadow tokens (card, dialog, etc.)
+│   │   ├── overrides.ts       # MUI component styleOverrides and variants
+│   │   └── index.tsx          # ThemeProvider — assembles and exports the theme
+│   ├── App.tsx                # Root component: auth gate + tab routing
+│   ├── main.tsx               # React entry point (createRoot)
+│   ├── index.css              # Global styles
+│   └── App.css
+├── index.html                 # Vite HTML entry
+├── package.json
+├── vite.config.ts
+├── tsconfig.json              # References tsconfig.app.json and tsconfig.node.json
+├── tsconfig.app.json          # Compiler options for src/
+├── tsconfig.node.json         # Compiler options for vite.config.ts
+├── eslint.config.js           # ESLint flat config
+└── pcconnect.code-workspace   # VS Code workspace file
+```
+
+## Key files explained
+
+**`src/App.tsx`** is the root of the component tree. It wraps everything in `SettingsProvider` and `ThemeProvider`, then renders either `LoginView` or `AppContent` depending on a single `isAuthenticated` boolean state. Once authenticated, `AppContent` tracks the active section through an `activeTab` string (e.g. `'#dashboard'`, `'#client-management'`) and calls `renderTabContent()` to swap the correct section view into the layout.
+
+**`src/layouts/dashboard/`** houses `DashboardLayout` — the persistent shell that every authenticated view lives inside. It renders the top header, the left navigation sidebar, and the scrollable main content slot. Navigation items are defined in `config-navigation` and call the `setActiveTab` prop passed down from `AppContent`.
+
+**`src/sections/`** holds every domain-specific feature view. Each subdirectory follows the pattern `<domain>/view/<domain>-view.tsx`. Adding a new section means creating a folder here and wiring it into the `renderTabContent()` switch in `App.tsx`.
+
+**`src/theme/`** contains the full MUI theme customisation. `ThemeProvider` in `index.tsx` reads `themeMode` and `themeColorPreset` from `useSettings()`, then composes the final `Theme` object from `getPalette()`, `typography`, `shadows`, `getCustomShadows()`, and `getComponents()` before passing it to MUI's `createTheme`.
+
+## Dependencies
+
+<CardGroup cols={2}>
+  <Card title="React 19" icon="react" href="https://react.dev">
+    UI framework — `react` 19.x and `react-dom` 19.x. Uses the new JSX transform (`react-jsx`) via `tsconfig.app.json`.
+  </Card>
+  <Card title="MUI Material v9" icon="palette" href="https://mui.com">
+    Component library — `@mui/material` 9.x. Heavily customised through the `src/theme/` system.
+  </Card>
+  <Card title="MUI Icons v9" icon="icons" href="https://mui.com/material-ui/material-icons/">
+    Icon set — `@mui/icons-material` 9.x. Used across navigation, buttons, and table actions.
+  </Card>
+  <Card title="MUI X Date Pickers v9" icon="calendar" href="https://mui.com/x/react-date-pickers/">
+    Date picker components — `@mui/x-date-pickers` 9.x, paired with `dayjs` for date utilities.
+  </Card>
+  <Card title="Emotion" icon="paintbrush" href="https://emotion.sh">
+    CSS-in-JS engine for MUI — `@emotion/react` and `@emotion/styled` 11.x.
+  </Card>
+  <Card title="ApexCharts" icon="chart-line" href="https://apexcharts.com">
+    Charting — `apexcharts` 5.x and `react-apexcharts` 2.x for dashboard metrics visualisation.
+  </Card>
+  <Card title="Lucide React" icon="shapes" href="https://lucide.dev">
+    Additional icon set — `lucide-react` 1.x used alongside MUI icons in certain components.
+  </Card>
+  <Card title="Vite 8" icon="bolt" href="https://vite.dev">
+    Build tool and dev server — `vite` 8.x with `@vitejs/plugin-react` 6.x for HMR support.
+  </Card>
+</CardGroup>
+
+| Package | Version | Purpose |
+|---|---|---|
+| `react` / `react-dom` | 19.x | UI framework |
+| `@mui/material` | 9.x | Component library |
+| `@mui/icons-material` | 9.x | MUI icon set |
+| `@mui/x-date-pickers` | 9.x | Date picker components |
+| `@emotion/react` / `@emotion/styled` | 11.x | CSS-in-JS for MUI |
+| `apexcharts` / `react-apexcharts` | 5.x / 2.x | Charting |
+| `dayjs` | 1.x | Date utilities |
+| `lucide-react` | 1.x | Additional icon set |
+| `vite` | 8.x | Build tool |
+| `typescript` | 6.x | Type checking (dev) |
+| `typescript-eslint` | 8.x | Linting TypeScript (dev) |
+
+<Tip>
+  Open `pcconnect.code-workspace` in VS Code to get the recommended workspace settings and extension suggestions configured for the project.
+</Tip>

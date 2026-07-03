@@ -1,0 +1,144 @@
+---
+title: "Users Management — PC Connect Admin Guide"
+sidebarTitle: "Users"
+description: "View, filter, and manage every platform user from a single table. Edit fields inline, export to CSV, and add new users through a guided modal."
+---
+
+The Users Management section gives administrators a central table to view and manage every account registered in PC Connect. From here you can search, filter, sort, inline-edit individual records, export a CSV snapshot of the current view, and onboard new users without leaving the page.
+
+<Note>
+  The filter row is shown by default (`showFiltersRow: true`). Click the **Filters** button in the toolbar to toggle it on or off.
+</Note>
+
+## Toolbar actions
+
+The action toolbar sits above the table and exposes four controls:
+
+<CardGroup cols={2}>
+  <Card title="Add User" icon="user-plus" href="#add-user-modal">
+    Opens the **Add User** modal to create a new platform account. First Name, Last Name, and Email Address are required fields.
+  </Card>
+  <Card title="Filters" icon="filter" href="#per-column-filters">
+    Toggles the per-column filter row visible directly beneath the table header.
+  </Card>
+  <Card title="Export" icon="download" href="#csv-export">
+    Downloads the currently filtered view as a `users_management.csv` file.
+  </Card>
+  <Card title="Search" icon="magnifying-glass" href="#global-search">
+    A global search box that matches against email, role, last name, first name, title, and last login date simultaneously.
+  </Card>
+</CardGroup>
+
+## Global search
+
+The search field (top-left of the toolbar) performs a case-insensitive substring match across the following columns in real time: **Email**, **Role**, **Last Name**, **First Name**, **Title**, and **Last Login** (displayed as `MM/DD/YYYY`). Typing in this box resets the table back to page 1 automatically.
+
+## Per-column filters
+
+When the filter row is visible, each column exposes its own control:
+
+| Column | Filter type | Behavior |
+|---|---|---|
+| Email | Text — *Contains* | Case-insensitive substring match |
+| Role | Text — *Contains* | Case-insensitive substring match |
+| Last Name | Text — *Contains* | Case-insensitive substring match |
+| First Name | Text — *Contains* | Case-insensitive substring match |
+| Title | Text — *Contains* | Case-insensitive substring match |
+| Last Login | Date picker — *Is* | Exact date match (`YYYY-MM-DD`) |
+| Allow Print | Dropdown — *Is* | `All` / `Yes` / `No` |
+| Frequency | Dropdown — *Is* | `All` / `Never` / `Weekly` / `Monthly` / `Daily` |
+| Active | Dropdown — *Is* | `All` / `Yes` / `No` |
+
+All column filters combine with the global search using logical AND — only rows satisfying every active condition are shown.
+
+## Inline editing
+
+Every text column (**Email**, **Last Name**, **First Name**, **Title**) renders as an editable input field directly inside the table cell. Dropdown columns (**Allow Print**, **Frequency**, **Active**) render as native `<select>` elements. The **Last Login** column uses a mobile-friendly date picker.
+
+When a row differs from its last-saved state, the **Discard row changes** button (↺ `RotateCcw` icon) in the final column becomes active. Clicking it reverts only that row back to its original values.
+
+Bulk actions appear below the table once any row has been modified:
+
+- **Save All** — commits all pending changes as the new baseline.
+- **Discard All Changes** — reverts every dirty row back to its last-saved values.
+
+## Pagination
+
+The table supports **5**, **10**, or **20** rows per page (default: 10). Page navigation controls are displayed in the bottom-right of the table container.
+
+## CSV export
+
+Clicking **Export** generates a CSV containing the columns: Email, Roles, Last Name, First Name, Title, Last Login, Allow Print, Frequency, Active. Only the currently filtered set of rows is exported.
+
+## Add User modal
+
+Clicking **Add User** opens a dialog form. The following fields are available:
+
+| Field | Required | Default |
+|---|---|---|
+| First Name | ✅ Yes | — |
+| Last Name | ✅ Yes | — |
+| Email Address | ✅ Yes | — |
+| Role | No | `User` |
+| Title | No | — |
+| Allow Print | No | `Yes` |
+| Frequency | No | `Never` |
+| Active | No | `Yes` |
+
+The **Add** button remains disabled until First Name, Last Name, and Email Address are all filled in. The new user is prepended to the top of the table immediately upon submission.
+
+## User field reference
+
+The `User` TypeScript interface defines the following fields:
+
+<ParamField path="id" type="string" required>
+  Unique identifier for the user record. Auto-generated on creation (`Date.now()` as string).
+</ParamField>
+
+<ParamField path="email" type="string" required>
+  The user's email address. Used as the primary login credential. Must be a valid email format when created via the Add User modal.
+</ParamField>
+
+<ParamField path="role" type="string" required>
+  The user's assigned role. Available values: `Admin`, `User`, `Provider`, `Director`, `Director/Provider`.
+</ParamField>
+
+<ParamField path="lastName" type="string" required>
+  The user's last (family) name.
+</ParamField>
+
+<ParamField path="firstName" type="string" required>
+  The user's first (given) name.
+</ParamField>
+
+<ParamField path="title" type="string">
+  Optional professional title, e.g. `MD`. May be left blank.
+</ParamField>
+
+<ParamField path="lastLogin" type="string" required>
+  The date of the user's most recent login, stored in `YYYY-MM-DD` format. Displayed in the table as `MM/DD/YYYY`.
+</ParamField>
+
+<ParamField path="allowPrint" type='"Yes" | "No"' required>
+  Controls whether the user is permitted to print documents from the platform. Defaults to `Yes` when creating a new user.
+</ParamField>
+
+<ParamField path="frequency" type='"Never" | "Weekly" | "Monthly" | "Daily"' required>
+  Notification or report delivery frequency for this user. Defaults to `Never` when creating a new user.
+</ParamField>
+
+<ParamField path="active" type='"Yes" | "No"' required>
+  Indicates whether the user account is currently active. Inactive users (`No`) remain visible in the table but cannot access the platform. Defaults to `Yes` when creating a new user.
+</ParamField>
+
+## Available roles
+
+The following roles can be assigned to any user:
+
+| Role | Description |
+|---|---|
+| `Admin` | Full administrative access to all sections, including Users Management |
+| `User` | Standard platform access without administrative privileges |
+| `Provider` | Access scoped to provider-specific views and clinical records |
+| `Director` | Director-level access for reporting and oversight functions |
+| `Director/Provider` | Combined Director and Provider permissions |

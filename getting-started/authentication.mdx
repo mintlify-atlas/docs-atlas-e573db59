@@ -1,0 +1,111 @@
+---
+title: "HIPAA-Compliant Authentication Flow in PC Connect"
+sidebarTitle: "Authentication"
+description: "Understand the PC Connect login flow, HIPAA disclaimer requirement, demo credentials, registration, and the forgot-password reset process."
+---
+
+PC Connect enforces a HIPAA-aware authentication flow before granting access to any Protected Health Information (PHI). Every session begins at the `LoginView` component, which renders a split-screen layout: a form panel on the left and a branded background image on the right (hidden on mobile). Three distinct views are available within the same component — **login**, **register**, and **forgot password** — controlled by a local `view` state variable.
+
+## Login Flow
+
+The default view is the **Sign In** form. It contains the following fields and controls:
+
+### Fields
+
+| Field | Type | Default Value |
+|---|---|---|
+| **Email address** | `TextField` (text) | `demo@pcconnect.com` |
+| **Password** | `TextField` (password, toggleable) | `password123` |
+
+The password field includes a visibility toggle: clicking the eye icon switches between masked and plain-text input using `showPassword` state.
+
+### HIPAA Disclaimer Panel
+
+Below the input fields, a bordered disclaimer box displays the following notice:
+
+> *"This site contains private health information (PHI) which is protected by HIPAA. Please do not distribute any content contained herein via electronic means. Printed materials from this site must be properly destroyed when no longer needed. Please acknowledge by clicking the box below."*
+
+A checkbox labeled **"Check this box:"** must be checked before the Sign In button becomes functional. If the user attempts to submit without checking it, the form renders the inline error:
+
+```
+You must acknowledge and accept the HIPAA disclaimer.
+```
+
+### Demo Credentials
+
+The login form is pre-populated with demo credentials for development and review purposes:
+
+```
+Email:    demo@pcconnect.com
+Password: password123
+```
+
+### Sign In Button
+
+Submitting the form calls `onLogin()`, which sets `isAuthenticated` to `true` in `App.tsx`, transitioning from `LoginView` to `AppContent` (the full dashboard).
+
+<Warning>
+  This application stores and displays Protected Health Information (PHI) regulated under HIPAA. You must check the HIPAA disclaimer box at every login session. Never distribute PHI via electronic means and properly destroy any printed materials when they are no longer needed.
+</Warning>
+
+---
+
+## Account Registration Flow
+
+Clicking **"Register account"** switches `view` to `'register'`. This screen allows new users to request access to the platform.
+
+### Fields and Controls
+
+1. **Email address** — A `TextField` where the applicant enters their email (placeholder: `example@gmail.com`).
+2. **reCAPTCHA checkbox** — A simulated "I'm not a robot" widget (302 × 76 px) with a checkbox that must be checked before submitting.
+3. **Send request button** — A pill-shaped `contained` primary button. On success, an alert confirms the request was sent and the view resets to `'login'`.
+
+### Validation
+
+| Condition | Error Message |
+|---|---|
+| Email field is empty | `Please enter your email address.` |
+| reCAPTCHA not checked | `Please check the reCAPTCHA box.` |
+
+---
+
+## Forgot Password Flow
+
+Clicking **"Forgot password?"** switches `view` to `'forgot'`. This screen sends a password reset link to the user's registered email.
+
+### Fields and Controls
+
+1. **Email address** — A `TextField` for the account email (placeholder: `example@gmail.com`).
+2. **reCAPTCHA checkbox** — Same simulated widget as registration; must be checked to proceed.
+3. **Send request button** — Submits the reset request. On success, an alert confirms the link was sent and the view resets to `'login'`.
+
+Both the registration and forgot-password views include a **"Return to sign in"** link (with a `←` arrow icon) that resets `view` to `'login'` and clears any error state.
+
+---
+
+## Authentication State Management
+
+<Info>
+  PC Connect uses a simple client-side boolean to gate access. The `isAuthenticated` state variable lives in the root `App` component and is initialized to `false`. When `LoginView` calls its `onLogin` prop, `isAuthenticated` becomes `true` and React renders `AppContent` (the dashboard) instead of `LoginView`. Calling `onLogout` (exposed via `SettingsDrawer`) sets it back to `false`, returning the user to the login screen.
+</Info>
+
+```tsx
+// src/App.tsx (simplified)
+export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  return (
+    <SettingsProvider>
+      <ThemeProvider>
+        {isAuthenticated ? (
+          <AppContent onLogout={() => setIsAuthenticated(false)} />
+        ) : (
+          <LoginView onLogin={() => setIsAuthenticated(true)} />
+        )}
+      </ThemeProvider>
+    </SettingsProvider>
+  );
+}
+```
+
+The entire application — including the `ThemeProvider` and `SettingsProvider` — wraps both authenticated and unauthenticated states, ensuring theme and settings context are always available.

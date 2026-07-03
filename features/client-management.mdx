@@ -1,0 +1,263 @@
+---
+title: "Client Management: Accounts, Profiles & Service Locations"
+sidebarTitle: "Clients"
+description: "Manage client accounts, locations of service, and detailed profiles including business, contact, administration, and malpractice information."
+---
+
+Client Management is the central registry for every client account in PC Connect. Each client represents a medical practice, staffing group, or healthcare entity contracted through your organization. Within Client Management you can browse all client records in a searchable, filterable table, open rich profile pages to review or update detailed information, and add new clients at any time via the **Add Client** modal.
+
+## Client Data Model
+
+Every client record conforms to the following TypeScript interface, sourced directly from `client-management-view.tsx`:
+
+```tsx
+export interface Client {
+  id: string;
+  dataSet: string;  // e.g. 'A01'
+  los: number;      // Location of Service number
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zip: string;
+  phone: string;
+  fax: string;
+  start: string;    // YYYY-MM-DD
+  end: string;      // YYYY-MM-DD or empty string
+  active: 'Yes' | 'No';
+}
+```
+
+<ParamField path="dataSet" type="string" required>
+  Unique dataset code for the client (e.g. `A01`, `A06B`). Clicking the code in the table opens the client's profile view.
+</ParamField>
+
+<ParamField path="los" type="number" required>
+  Location of Service number. A client with multiple physical locations uses sub-coded entries sharing the same name (e.g. `A06`, `A06A`, `A06B`, `A06C`).
+</ParamField>
+
+<ParamField path="name" type="string" required>
+  Full legal name of the client organization.
+</ParamField>
+
+<ParamField path="address" type="string" required>
+  Street address, which may include a suite on a second line separated by `\n`.
+</ParamField>
+
+<ParamField path="city" type="string" required>
+  City of the client's primary address.
+</ParamField>
+
+<ParamField path="state" type="string" required>
+  Two-letter state abbreviation (e.g. `MI`, `MN`, `VA`).
+</ParamField>
+
+<ParamField path="zip" type="string" required>
+  ZIP or ZIP+4 postal code.
+</ParamField>
+
+<ParamField path="phone" type="string">
+  Primary phone number. May be empty if not on file.
+</ParamField>
+
+<ParamField path="fax" type="string">
+  Fax number. May be empty if not on file.
+</ParamField>
+
+<ParamField path="start" type="string" required>
+  Contract start date in `YYYY-MM-DD` format.
+</ParamField>
+
+<ParamField path="end" type="string">
+  Contract end date in `YYYY-MM-DD` format, or an empty string if the contract is ongoing.
+</ParamField>
+
+<ParamField path="active" type="'Yes' | 'No'" required>
+  Whether the client account is currently active.
+</ParamField>
+
+## Sample Dataset Codes
+
+The table below shows the sample dataset codes present in the application, illustrating how a single client can span multiple LOS sub-entries:
+
+| Data Set | LOS | Client Name                          | City              | State |
+| -------- | --- | ------------------------------------ | ----------------- | ----- |
+| A01      | 1   | South Shore Anesthesia Staffing, LLC | Marquette         | MI    |
+| A02      | 1   | Elite Anesthesia LLC                 | Minneapolis       | MN    |
+| A03      | 1   | UP Bell Hospital Anesthesia          | Ishpeming         | MI    |
+| A04      | 1   | Fairfax Colon & Rectal Surgery       | Fairfax           | VA    |
+| A05      | 1   | AAS Indiana, LLC                     | Novi              | MI    |
+| A05A     | 2   | AAS Indiana, LLC                     | Novi              | MI    |
+| A06      | 1   | Detroit Anesthesia Group LLC         | Novi              | MI    |
+| A06A     | 2   | Detroit Anesthesia Group LLC         | Dearborn Heights  | MI    |
+| A06B     | 3   | Detroit Anesthesia Group LLC         | Trenton           | MI    |
+| A06C     | 4   | Detroit Anesthesia Group LLC         | Troy              | MI    |
+| A07      | 1   | Michigan CRNAS Staffing LLC          | Novi              | MI    |
+
+<Note>
+  Dataset codes like `A06`, `A06A`, `A06B`, and `A06C` all belong to the same parent organization (Detroit Anesthesia Group LLC) but represent distinct physical locations, each with its own LOS number, address, and phone.
+</Note>
+
+## Table Features
+
+The client list view provides a full suite of search, filter, pagination, and export tools.
+
+### Global Search
+
+A **Search** bar in the toolbar matches input against all text columns simultaneously — dataset code, name, address, city, state, ZIP, phone, fax, start date, and end date.
+
+### Per-Column Filters
+
+Toggle the filter row using the **Filters** button in the toolbar. Each column exposes its own filter control:
+
+| Column     | Filter Type            |
+| ---------- | ---------------------- |
+| Data Set   | Text — "Contains"      |
+| Name       | Text — "Contains"      |
+| Address    | Text — "Contains"      |
+| City       | Text — "Contains"      |
+| State      | Text — "Contains"      |
+| Zip        | Text — "Contains"      |
+| Phone      | Text — "Contains"      |
+| Fax        | Text — "Contains"      |
+| Start Date | Date picker — "Is"     |
+| End Date   | Date picker — "Is"     |
+| Active     | Dropdown — All/Yes/No  |
+
+### Pagination
+
+The table is paginated. Use the pagination controls at the bottom-right to change pages or adjust the rows-per-page setting (options: 5, 10, 20).
+
+### CSV Export
+
+Click the **Export** button in the toolbar to download the currently visible (filtered) client list as a `clients_management.csv` file. The export includes all columns: Data Set, LOS, Name, Address, City, State, Zip, Phone, Fax, Start, End, and Active.
+
+## Adding a Client
+
+Click the **+** (Plus / Add Client) button in the toolbar to open the **Add Client** modal. The form requires the following fields before the record can be saved:
+
+<Tabs>
+  <Tab title="Required Fields">
+    - **Data Set** — unique code (e.g. `A08`)
+    - **LOS** — location of service number (default `1`)
+    - **Client Name** — full legal name
+    - **Address** — street address line
+    - **City**
+    - **State** — two-letter abbreviation
+    - **Zip** — postal code
+    - **Start Date** — contract start (`YYYY-MM-DD`)
+  </Tab>
+  <Tab title="Optional Fields">
+    - **Phone** — primary phone number
+    - **Fax** — fax number
+    - **End Date** — contract end date (leave blank for ongoing)
+    - **Active** — defaults to `Yes`
+  </Tab>
+</Tabs>
+
+<Warning>
+  The **Add** button remains disabled until all required fields (Data Set, Client Name, Address, City, State, Zip, and Start Date) are filled in.
+</Warning>
+
+## Client Profile View
+
+Clicking any **Data Set** code in the table opens the full **Client Profile** view for that record. The profile is organized into a header banner with navigation tabs and several detail cards.
+
+### Profile Header
+
+The profile header displays:
+- A circular avatar showing the **Data Set** code
+- The **Client Name** as the profile title
+- Three navigation tabs: **Client** (active by default), **Banks**, and **Systems**
+
+### Client Information Card
+
+<Steps>
+  <Step title="Name">
+    Full legal name of the client, editable via text field.
+  </Step>
+  <Step title="Location of Service">
+    Numeric LOS value, editable via number field.
+  </Step>
+  <Step title="NPI">
+    National Provider Identifier number, editable via text field.
+  </Step>
+  <Step title="Start Date / End Date">
+    Contract date range, each editable via a date picker (`YYYY-MM-DD`).
+  </Step>
+  <Step title="Toggles">
+    Three boolean switches: **Credential Necessary**, **Credential Verification**, and **Active**.
+  </Step>
+</Steps>
+
+### Contact Card
+
+The Contact card has six sub-tabs, each holding the same set of address and communication fields for a different contact type:
+
+<Tabs>
+  <Tab title="Primary">
+    Address 1, Address 2, City, State, Zip, Phone, Fax
+  </Tab>
+  <Tab title="Facility">
+    Address 1, Address 2, City, State, Zip, Phone, Fax
+  </Tab>
+  <Tab title="Billing">
+    Address 1, Address 2, City, State, Zip, Phone, Fax
+  </Tab>
+  <Tab title="Bank">
+    Address 1, Address 2, City, State, Zip, Phone, Fax
+  </Tab>
+  <Tab title="Collection Agency">
+    Address 1, Address 2, City, State, Zip, Phone, Fax
+  </Tab>
+  <Tab title="Insurance Agency">
+    Address 1, Address 2, City, State, Zip, Phone, Fax
+  </Tab>
+</Tabs>
+
+### Business Card
+
+| Field           | Description                                    |
+| --------------- | ---------------------------------------------- |
+| EIN             | Employer Identification Number (e.g. `85-1930565`) |
+| Entity Type     | Legal entity classification                    |
+| Entity Date     | Date the entity was established                |
+| Fiscal          | Fiscal year identifier                         |
+| Permit #        | Business permit number                         |
+| Effective       | Business permit / license effective date       |
+| Expiration      | Business permit / license expiration date      |
+
+### Administration Card
+
+The Administration card captures staffing privilege toggles and contact information for the physician and administrator on record.
+
+**Privilege Toggles:**
+- **Nurse Practitioners** — on/off
+- **Physician Assistants** — on/off
+- **Residents/Fellows** — on/off
+
+**Physician sub-block:** Name, Phone, Fax
+
+**Administrator sub-block:** Name, Phone, Fax
+
+### Malpractice Card
+
+| Field              | Description                                       |
+| ------------------ | ------------------------------------------------- |
+| Legal Name         | Legal name on the malpractice policy              |
+| Carrier            | Insurance carrier                                 |
+| Policy #           | Policy number                                     |
+| Effective          | Policy effective date                             |
+| Expiration         | Policy expiration date                            |
+| Limit Occurrence   | Per-occurrence liability limit                    |
+| Carrier Aggregate  | Carrier aggregate liability limit                 |
+
+## Navigation
+
+Client Management is accessible from the sidebar under the **ENROLLMENT** group:
+
+| Sidebar Group | Item               | Path                  |
+| ------------- | ------------------ | --------------------- |
+| ENROLLMENT    | Client Management  | `#client-management`  |
+
+Once a row is selected, the active path changes to `#client-profile` to render the individual client profile. Clicking **Management** in the breadcrumb returns you to the client list.

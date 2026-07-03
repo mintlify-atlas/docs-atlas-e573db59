@@ -1,0 +1,112 @@
+---
+title: "Setting Up PC Connect Locally in Five Minutes"
+sidebarTitle: "Setup"
+description: "Install Node.js dependencies and launch the PC Connect Vite dev server locally with hot module replacement ready out of the box."
+---
+
+This page walks you through every step needed to get PC Connect running on your local machine — from cloning the repository to opening the live-reloading dev server in your browser. The stack is React 19 + TypeScript + Vite 8, so the setup is fast and the feedback loop is immediate.
+
+## Prerequisites
+
+Before you begin, make sure the following tools are available in your environment:
+
+| Requirement | Minimum Version | Notes |
+|---|---|---|
+| **Node.js** | 18+ | LTS recommended |
+| **Package manager** | npm 9 / yarn 1.22 / pnpm 8 | Any of the three works |
+| **Git** | Any recent version | For cloning the repository |
+
+## Installation Steps
+
+<Steps>
+  <Step title="Clone the repository">
+    Run the following command to clone PC Connect and move into the project directory:
+
+    ```bash
+    git clone https://github.com/yoelrrg-code/pcconnect.git && cd pcconnect
+    ```
+  </Step>
+
+  <Step title="Install dependencies">
+    Install all production and development dependencies declared in `package.json`:
+
+    <CodeGroup>
+      ```bash npm
+      npm install
+      ```
+
+      ```bash yarn
+      yarn install
+      ```
+
+      ```bash pnpm
+      pnpm install
+      ```
+    </CodeGroup>
+
+    Key dependencies installed include `react@^19.2.6`, `@mui/material@^9.1.2`, `apexcharts@^5.15.1`, `lucide-react@^1.21.0`, and `dayjs@^1.11.21`.
+  </Step>
+
+  <Step title="Start the development server">
+    Launch the Vite development server:
+
+    ```bash
+    npm run dev
+    ```
+
+    Vite will compile the project and print a local URL to the terminal. The output typically looks like:
+
+    ```
+    VITE v8.x.x  ready in ~300ms
+
+    ➜  Local:   http://localhost:5173/
+    ➜  Network: http://192.168.x.x:5173/
+    ```
+  </Step>
+
+  <Step title="Open the application in your browser">
+    Navigate to [http://localhost:5173](http://localhost:5173). You will be presented with the PC Connect login screen. Use the demo credentials documented in [Authentication](/getting-started/authentication) to sign in.
+  </Step>
+</Steps>
+
+## Available Scripts
+
+All scripts are defined in `package.json` under the `"scripts"` key:
+
+| Script | Command | Description |
+|---|---|---|
+| `dev` | `vite` | Starts the Vite HMR development server |
+| `build` | `tsc -b && vite build` | Type-checks with TypeScript then bundles for production |
+| `lint` | `eslint .` | Runs ESLint across the entire codebase |
+| `preview` | `vite preview` | Serves the production build locally for inspection |
+
+```bash
+# Type-check and build for production
+npm run build
+
+# Preview the production bundle
+npm run preview
+
+# Lint all TypeScript and TSX files
+npm run lint
+```
+
+## Vite Configuration
+
+The `vite.config.ts` at the project root uses `@vitejs/plugin-react` for fast refresh and sets a `chunkSizeWarningLimit` of `1000` kB to suppress bundle size warnings during development:
+
+```ts
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+export default defineConfig({
+  plugins: [react()],
+  build: {
+    chunkSizeWarningLimit: 1000,
+  },
+})
+```
+
+<Tip>
+  Vite's Hot Module Replacement (HMR) means that most code changes — including MUI theme tweaks and component edits — reflect instantly in the browser without a full page reload, preserving your current navigation state.
+</Tip>

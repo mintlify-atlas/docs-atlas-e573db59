@@ -1,0 +1,225 @@
+---
+title: "Customising the PC Connect Theme with MUI v9 and Poppins"
+sidebarTitle: "Theming"
+description: "How PC Connect builds its MUI v9 theme — color palette tokens, Poppins typography, custom shadows, component overrides, and light/dark mode switching."
+---
+
+PC Connect ships a fully customised MUI v9 theme assembled in `src/theme/`. The theme is built fresh on every settings change: `ThemeProvider` in `src/theme/index.tsx` reads the current `themeMode` and `themeColorPreset` from the `useSettings()` hook, composes a `ThemeOptions` object from five focused modules — `palette`, `typography`, `shadows`, `custom-shadows`, and `overrides` — and passes the result to MUI's `createTheme`. `CssBaseline` is included so browser defaults are normalised before any application styles apply.
+
+## ThemeProvider wiring
+
+`ThemeProvider` lives just inside `SettingsProvider` in `App.tsx`, so it always has access to the latest user preferences via context.
+
+```tsx
+// src/App.tsx (simplified)
+export default function App() {
+  return (
+    <SettingsProvider>
+      <ThemeProvider>
+        {isAuthenticated ? <AppContent /> : <LoginView />}
+      </ThemeProvider>
+    </SettingsProvider>
+  );
+}
+```
+
+Inside `ThemeProvider`, `useMemo` re-computes the theme only when `themeMode` or `themeColorPreset` changes, preventing unnecessary re-renders across the whole tree.
+
+## Color palette
+
+All tokens live in `src/theme/palette.ts`. The primary brand color is **Magenta Corporate** and is the only preset currently defined under `ColorPresetId`.
+
+### Primary — Magenta Corporate
+
+| Token | Hex |
+|---|---|
+| `hover` | `#FDEEF7` |
+| `lighter` | `#FEE7F2` |
+| `light` | `#D01A8E` |
+| `main` | `#B81A80` |
+| `dark` | `#80004E` |
+| `darker` | `#4D002E` |
+| `contrastText` | `#FFFFFF` |
+
+### Secondary — Gold
+
+| Token | Hex |
+|---|---|
+| `lighter` | `#FFF8E7` |
+| `light` | `#FFC84B` |
+| `main` | `#E4A11B` |
+| `dark` | `#A16F00` |
+| `darker` | `#6A4600` |
+
+### GREY scale
+
+| Key | Hex |
+|---|---|
+| `0` | `#FFFFFF` |
+| `100` | `#F9FAFB` |
+| `200` | `#F4F6F8` |
+| `300` | `#F4F4F6` |
+| `400` | `#90949C` |
+| `500` | `#DCDCDC` |
+| `600` | `#637381` |
+| `700` | `#30394A` |
+| `800` | `#737373` |
+| `900` | `#30394A` |
+
+### Semantic colors
+
+| Token | `main` value |
+|---|---|
+| `SUCCESS` | `#22C55E` |
+| `WARNING` | `#FFAB00` |
+| `ERROR` | `#FF5630` |
+| `INFO` | `#00B8D9` |
+
+### Light vs dark backgrounds
+
+`getPalette(mode, presetId)` returns a different `background` object depending on the current mode:
+
+| Mode | `background.paper` | `background.default` |
+|---|---|---|
+| Light | `#FFFFFF` (GREY 0) | `#F4F4F6` (GREY 300) |
+| Dark | `#161C24` | `#0C1017` |
+
+```ts
+// src/theme/palette.ts
+export function getPalette(mode: 'light' | 'dark', presetId: ColorPresetId = 'default') {
+  const activePrimary = colorPresets[presetId].primary;
+  // returns lightPalette or darkPalette
+}
+```
+
+## Color preset
+
+`ColorPresetId` is a TypeScript string-literal union. Currently only `'default'` (Magenta Corporate) is defined, but the architecture supports adding further named presets to `colorPresets` in `palette.ts` without touching the theme assembly code.
+
+```ts
+export type ColorPresetId = 'default';
+
+export const colorPresets: Record<ColorPresetId, ColorPreset> = {
+  default: {
+    name: 'Magenta (Corporate)',
+    primary: { /* … */ },
+  },
+};
+```
+
+## Typography
+
+`src/theme/typography.ts` sets **Poppins** as the sole font family across the entire application.
+
+```ts
+const FONT_PRIMARY = 'Poppins, sans-serif';
+
+export const typography = {
+  fontFamily: FONT_PRIMARY,
+  fontWeightLight: 300,
+  fontWeightRegular: 400,
+  fontWeightMedium: 500,
+  fontWeightSemiBold: 600,
+  fontWeightBold: 700,
+  // h1–h6, body1, body2, caption, overline, button …
+};
+```
+
+The `responsiveFontSizes()` helper applies `@media` breakpoint overrides for `h1`–`h6` so headings scale cleanly from mobile to desktop. `button` text-transform is set to `'unset'` so button labels respect their natural casing.
+
+## Shadows
+
+Two shadow systems coexist:
+
+**`src/theme/shadows.ts`** — exports `lightShadows` and `darkShadows`, each a 25-entry `Shadows` array that matches MUI's elevation scale. Both use `GREY[500]` (`#DCDCDC`) as the shadow color with varying opacity and spread values.
+
+**`src/theme/custom-shadows.ts`** — exports the `CustomShadows` interface and `getCustomShadows()`. This produces semantic tokens keyed by name rather than elevation number:
+
+| Token | Purpose |
+|---|---|
+| `z1` – `z24` | Elevation helpers |
+| `primary` | Glow shadow using the active primary color |
+| `card` | Card container shadow (differs between light and dark) |
+| `dialog` | Modal/dialog shadow |
+| `dropdown` | Menu and popover shadow |
+| `success` / `warning` / `error` / `info` | Status-colored glows |
+
+The `CustomShadows` type is merged into MUI's `Theme` interface via module augmentation in `src/theme/index.tsx`, so `theme.customShadows.card` is fully type-safe.
+
+## Component overrides
+
+`src/theme/overrides.ts` exports `getComponents()`, which returns a `Components` object that overrides default MUI styles for:
+
+- **`MuiCssBaseline`** — box-sizing, body font, smooth background/color transition, custom scrollbar
+- **`MuiCard`** — 16 px border-radius, `customShadows.card`, Safari z-index fix
+- **`MuiButton`** — five custom variants (`toolbar`, `signIn`, `signInV2`, `modalAdd`, `modalCancel`) plus `textTransform: none` on all buttons
+- **`MuiInputLabel`** / **`MuiOutlinedInput`** — consistent 40 px height, always-shrunk label, Poppins font
+- **`MuiTableCell`** — primary-colored header row with white bold text, zebra hover via alpha primary
+- **`MuiMobileDatePicker`** — condensed date picker defaults that match the 40 px input height
+
+<Note>
+  The `MuiInputBase` variant `cellEdit` enables inline-editable table cells with an animated underline border that activates on focus.
+</Note>
+
+## Accessing the theme in components
+
+Use MUI's `useTheme` hook anywhere inside the provider tree:
+
+```tsx
+import { useTheme } from '@mui/material';
+import Box from '@mui/material/Box';
+
+function MyComponent() {
+  const theme = useTheme();
+
+  return (
+    <Box sx={{ color: theme.palette.primary.main }}>
+      Branded text
+    </Box>
+  );
+}
+```
+
+The `sx` prop also accepts a callback, which is the most concise pattern:
+
+```tsx
+<Box sx={(theme) => ({ backgroundColor: theme.palette.background.paper })}>
+  Surface card
+</Box>
+```
+
+## Changing color preset at runtime
+
+```tsx
+import { useSettings } from '../components/settings/settings-context';
+
+function PresetPicker() {
+  const { themeColorPreset, onChangeColorPreset } = useSettings();
+
+  return (
+    <button onClick={() => onChangeColorPreset('default')}>
+      Active: {themeColorPreset}
+    </button>
+  );
+}
+```
+
+## Toggling dark mode
+
+```tsx
+import { useSettings } from '../components/settings/settings-context';
+
+function ModeToggle() {
+  const { themeMode, onToggleMode } = useSettings();
+
+  return (
+    <button onClick={onToggleMode}>
+      Switch to {themeMode === 'light' ? 'dark' : 'light'} mode
+    </button>
+  );
+}
+```
+
+<Tip>
+  Both `themeMode` and `themeColorPreset` are persisted to `localStorage` by `SettingsProvider`, so the user's preference survives page reloads automatically.
+</Tip>

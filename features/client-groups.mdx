@@ -1,0 +1,50 @@
+---
+title: "Client Groups: Corporate Accounts & Compliance Units"
+sidebarTitle: "Client Groups"
+description: "Configure corporate accounts, group discounts, and compliance units to organize clients that share ownership, contracts, or regulatory requirements."
+---
+
+Client Groups allow administrators to configure corporate accounts, group discounts, and compliance units within PC Connect. When multiple client accounts belong to the same parent organization — or share a contract structure, discount schedule, or regulatory compliance requirement — a Client Group provides the mechanism to model and manage that relationship in one place.
+
+## What Client Groups Do
+
+Navigating to **ENROLLMENT → Client Group** (path `#client-group`) opens the Client Groups view. The description rendered in the dashboard reads:
+
+> *Configure corporate accounts, group discounts, and compliance units.*
+
+A group acts as a logical container, linking individual client records together under a shared configuration so that policies, discounts, and compliance rules can be applied consistently across all members of the group.
+
+## Creating a Group
+
+A **Create Group** button is prominently available in the Client Groups view. Use it to define a new group and begin associating client accounts.
+
+<Steps>
+  <Step title="Open Client Groups">
+    In the left sidebar, navigate to **ENROLLMENT → Client Group**.
+  </Step>
+  <Step title="Click Create Group">
+    Select the **Create Group** button to open the group creation form.
+  </Step>
+  <Step title="Define the group configuration">
+    Provide the group details — such as the corporate account name, applicable discounts, and compliance unit designation — then save to create the group.
+  </Step>
+  <Step title="Associate client accounts">
+    Once the group exists, link the relevant [Client Management](/features/client-management) records to it so that shared settings apply across all member accounts.
+  </Step>
+</Steps>
+
+## Navigation
+
+Client Groups are accessible from the sidebar under the **ENROLLMENT** group:
+
+| Sidebar Group | Item           | Path             |
+| ------------- | -------------- | ---------------- |
+| ENROLLMENT    | Client Group   | `#client-group`  |
+
+## Multi-Location Organizations
+
+<Info>
+  Client Groups are especially useful for healthcare organizations that operate across multiple locations. Instead of managing corporate account settings, group-level discounts, or compliance unit assignments on each client record individually, you can define those settings once at the group level and apply them to all member clients simultaneously. This keeps configuration consistent and reduces the risk of discrepancies between locations.
+</Info>
+
+For example, a practice group like Detroit Anesthesia Group LLC — which appears in [Client Management](/features/client-management) under dataset codes `A06`, `A06A`, `A06B`, and `A06C` for four separate locations — could be represented as a single Client Group, with group-level rules automatically inherited by each location's client record.

@@ -1,0 +1,107 @@
+---
+title: "Dashboard Home: Module Cards and News Widget"
+sidebarTitle: "Overview"
+description: "The PC Connect dashboard home renders five module shortcut cards and a News widget, all defined in AppView inside app-view.tsx."
+---
+
+When a user successfully authenticates, the dashboard defaults to the `#dashboard` route, which renders `AppView` — the home screen of PC Connect. `AppView` accepts an optional `onNavigate` prop (type: `(tab: string) => void`) that wires each card directly to its corresponding section in the `renderTabContent()` switch statement in `App.tsx`. The home screen is composed of two main regions: a responsive grid of five module cards and a News widget card at the bottom.
+
+## The Five Module Cards
+
+Each card is rendered by the internal `MenuCard` component. Cards are laid out using MUI's `Grid` with a `spacing={5}` gap in a two-column arrangement on medium and larger screens (`md: 6`) and full-width on mobile (`xs: 12`).
+
+### Card Anatomy
+
+Every `MenuCard` is a styled MUI `Card` with:
+
+- **Height:** `174px` (fixed).
+- **Left panel (97px wide):** Displays a custom SVG icon centered over a background image (`card-bg-tech.png`). The panel uses `background-size: cover` to fill the area.
+- **Right panel (flexible):** Shows the card title in `h4` typography (primary color in light mode, `text.primary` in dark mode) and a golden `ArrowRight` icon (`color: #E4A11B`, `strokeWidth: 2.5`).
+- **Hover animation:** `translateY(-4px)` lift + elevated box shadow + the left panel image scales to `1.15×` — all via a `0.3s cubic-bezier(0.4, 0, 0.2, 1)` transition.
+
+### Module Descriptions
+
+<CardGroup cols={2}>
+  <Card
+    title="Active Incomplete Cases"
+    icon="file-check"
+    href="/features/active-incomplete-cases"
+  >
+    Displays cases that are in progress but not yet finalized. Navigates to `#active-incomplete-cases`, which renders `ActiveIncompleteCasesView`.
+  </Card>
+  <Card
+    title="ED Floor Visits"
+    icon="activity"
+    href="/features/ed-floor-visits"
+  >
+    Provides a real-time feed of emergency department floor visits and medical device allocations. Navigates to `#ed-floor-visits`.
+  </Card>
+  <Card
+    title="Educational Resources"
+    icon="graduation-cap"
+    href="/features/educational-resources"
+  >
+    A library of educational materials for staff and providers. Renders `EducationalResourcesView` at `#educational-resources`.
+  </Card>
+  <Card
+    title="Provider Enrollment"
+    icon="user-check"
+    href="/features/provider-management"
+  >
+    Directory and credentialing for medical providers in the network. Navigates to `#provider-management` (labeled "Provider Enrollement" in the source).
+  </Card>
+  <Card
+    title="Reports"
+    icon="clipboard-list"
+    href="/features/report-management"
+  >
+    Compile spreadsheets, medical audits, and PDF files. Navigates to `#report-management`, surfacing the Report Management view.
+  </Card>
+</CardGroup>
+
+---
+
+## Card Styling Reference
+
+```tsx
+// MenuCard — key style values from app-view.tsx
+<Card
+  sx={{
+    height: 174,
+    borderRadius: 3,
+    overflow: 'hidden',
+    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+    '&:hover': {
+      transform: 'translateY(-4px)',
+      boxShadow: theme.customShadows.z12,
+      '& .card-bg-box': { transform: 'scale(1.15)' },
+    },
+  }}
+>
+  {/* Left panel: 97px wide, background image + brand gradient fallback */}
+  <Box
+    className="card-bg-box"
+    sx={{
+      width: 97,
+      background: `url(${cardBgTech}) no-repeat center center / cover`,
+      transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+    }}
+  />
+  {/* Right panel: title + ArrowRight icon */}
+</Card>
+```
+
+The gradient fallback for the left panel (used when no `bgImage` prop is provided) is `linear-gradient(135deg, #FF5B26 0%, #A90065 100%)`.
+
+---
+
+## News Widget
+
+Below the card grid, a borderless, shadow-free `Card` (`boxShadow: 'none'`, `border: 'none'`, `borderRadius: 3`) renders a **News** widget. Its current state displays a placeholder row:
+
+| Column | Content |
+|---|---|
+| Left | `"No news available."` (body1, `text.primary`) |
+| Right | `"a few seconds"` (body1, `text.disabled`) |
+
+A thin 1px divider (`theme.palette.divider`) separates the "News" subtitle from the content row. This widget is intended to display time-stamped announcements and updates relevant to the organization.

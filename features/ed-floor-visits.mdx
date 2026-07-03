@@ -1,0 +1,43 @@
+---
+title: "Monitoring ED Floor Visits and Medical Device Allocations"
+sidebarTitle: "Floor Visits"
+description: "View a real-time feed of emergency department patient floor visits and medical device allocations. Refresh the feed on demand from the dashboard."
+---
+
+ED Floor Visits provides a real-time feed of patient floor visits and medical device allocations across emergency department units. The view gives care coordinators and clinical staff an up-to-date snapshot of active patient movement and equipment usage without needing to leave the PC Connect dashboard.
+
+## Navigation
+
+<CardGroup cols={2}>
+  <Card title="Sidebar" icon="sidebar" href="#ed-floor-visits">
+    OVERVIEW → ED Floor Visits
+  </Card>
+  <Card title="Dashboard Home" icon="house" href="#dashboard">
+    Select the ED Floor Visits card on the dashboard home screen
+  </Card>
+</CardGroup>
+
+## What This View Shows
+
+The ED Floor Visits view surfaces two key data streams:
+
+- **Patient floor visits feed** — real-time records of patients currently placed on ED floors, updated as visit data changes.
+- **Medical device allocations** — equipment assigned to patients or floor bays at the time the feed was last loaded.
+
+<Info>
+  This is a live-feed view. The data displayed reflects the state of the system at the moment the feed was last loaded or refreshed. It does not update automatically in the background — use the **Refresh Visit Feed** button to pull the latest records.
+</Info>
+
+## Refreshing the Feed
+
+Click the **Refresh Visit Feed** button to reload the latest patient floor visits and device allocation data from the source system.
+
+```tsx
+<Button variant="contained" color="primary">
+  Refresh Visit Feed
+</Button>
+```
+
+<Tip>
+  Refresh the feed before reviewing assignments during shift handoffs to ensure your team is working from the most current visit data.
+</Tip>
